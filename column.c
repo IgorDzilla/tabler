@@ -44,25 +44,25 @@ Column *new_col(char *name, TYPE type) {
   return col;
 }
 
-int col_append_int(Column *col, int *value);
-int col_append_float(Column *col, float *value);
-int col_append_str(Column *col, char **name);
+int col_push_int(Column *col, int *value);
+int col_push_float(Column *col, float *value);
+int col_push_str(Column *col, char **name);
 
-int col_append(Column *column, void *value) {
+int col_push(Column *column, void *value) {
   switch (column->type) {
   case INT:
-    return col_append_int(column, (int *)value);
+    return col_push_int(column, (int *)value);
   case FLOAT:
-    return col_append_float(column, (float *)value);
+    return col_push_float(column, (float *)value);
   case STRING:
-    return col_append_str(column, (char **)value);
+    return col_push_str(column, (char **)value);
   default:
     fprintf(stderr, "Uknown data type");
     return 1;
   }
 }
 
-int col_append_int(Column *col, int *value) {
+int col_push_int(Column *col, int *value) {
   int *new_data =
       (int *)realloc(col->int_items, (col->col_size + 1) * sizeof(int));
   if (!new_data) {
@@ -84,7 +84,7 @@ int col_append_int(Column *col, int *value) {
   return 0;
 }
 
-int col_append_float(Column *col, float *value) {
+int col_push_float(Column *col, float *value) {
   float *new_data =
       (float *)realloc(col->int_items, (col->col_size + 1) * sizeof(float));
   if (!new_data) {
@@ -106,7 +106,7 @@ int col_append_float(Column *col, float *value) {
   return 0;
 }
 
-int col_append_str(Column *col, char **value) {
+int col_push_str(Column *col, char **value) {
   char **new_data =
       (char **)realloc(col->int_items, (col->col_size + 1) * sizeof(char *));
   if (!new_data) {
@@ -130,4 +130,16 @@ int col_append_str(Column *col, char **value) {
     col->print_width = val_width;
 
   return 0;
+}
+
+void terminate_col(Column *column) {
+  free(column->col_name);
+
+  if (column->type != STRING) {
+    for (int i = 0; i < column->col_size; i++)
+      free(column->str_items[i]);
+  }
+
+  free(column->str_items);
+  free(column);
 }
